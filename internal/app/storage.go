@@ -6,12 +6,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Urls struct {
-	ID   string
-	Hash string
-	Url  string
-}
-
 func InitDB() (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", "./urls.db")
 	if err != nil {
@@ -33,7 +27,7 @@ func InitDB() (*sql.DB, error) {
 	return db, nil
 }
 
-func GetUrlByHash(db *sql.DB, hash string) (string, error) {
+func GetURLByHash(db *sql.DB, hash string) (string, error) {
 	var result string
 	err := db.QueryRow("SELECT url FROM urls WHERE hash = ?", hash).Scan(&result)
 	if err != nil {
@@ -43,7 +37,7 @@ func GetUrlByHash(db *sql.DB, hash string) (string, error) {
 	return result, nil
 }
 
-func CreateUrl(db *sql.DB, hash string, url string) error {
+func CreateURL(db *sql.DB, hash string, url string) error {
 	result, err := db.Exec("INSERT INTO urls (hash, url) VALUES (?, ?)", hash, url)
 	if err != nil {
 		return err

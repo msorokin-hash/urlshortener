@@ -11,8 +11,8 @@ func main() {
 	port := ":8080"
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", app.AddUrlHandler)
-	mux.HandleFunc("/{hash}", app.GetUrlHandler)
+	mux.HandleFunc("/", app.AddURLHandler)
+	mux.HandleFunc("/{hash}", app.GetURLHandler)
 
 	log.Fatal(http.ListenAndServe(port, mux))
 }

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func GetUrlHandler(w http.ResponseWriter, r *http.Request) {
+func GetURLHandler(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) < 2 {
 		http.Error(w, "invalid request", http.StatusBadRequest)
@@ -20,7 +20,7 @@ func GetUrlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer dbConn.Close()
 
-	res, err := GetUrlByHash(dbConn, parts[1])
+	res, err := GetURLByHash(dbConn, parts[1])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
@@ -29,7 +29,7 @@ func GetUrlHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func AddUrlHandler(w http.ResponseWriter, r *http.Request) {
+func AddURLHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "invalid request method", http.StatusBadRequest)
 		return
@@ -49,7 +49,7 @@ func AddUrlHandler(w http.ResponseWriter, r *http.Request) {
 	defer dbConn.Close()
 
 	hashed := HashStringData(string(body))
-	err = CreateUrl(dbConn, string(hashed), string(body))
+	err = CreateURL(dbConn, string(hashed), string(body))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
