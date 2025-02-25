@@ -4,15 +4,18 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/msorokin-hash/urlshortener/internal/app"
 )
 
 func main() {
-	port := ":8080"
-	mux := http.NewServeMux()
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 
-	mux.HandleFunc("/", app.AddURLHandler)
-	mux.HandleFunc("/{hash}", app.GetURLHandler)
+	r.Post("/", app.AddURLHandler)
+	r.Get("/{hash}", app.GetURLHandler)
 
-	log.Fatal(http.ListenAndServe(port, mux))
+	log.Fatal(http.ListenAndServe(":8080", r))
 }

@@ -1,8 +1,10 @@
 module github.com/msorokin-hash/urlshortener
 
-go 1.22.12
+go 1.22.14
 
-require github.com/mattn/go-sqlite3 v1.14.16
+require github.com/mattn/go-sqlite3 v1.14.24
+
+require github.com/go-chi/chi/v5 v5.2.1
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
