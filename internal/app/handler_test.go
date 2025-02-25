@@ -45,6 +45,7 @@ func TestGetURLHandler(t *testing.T) {
 		handler(rr, req)
 
 		result := rr.Result()
+		defer result.Body.Close()
 
 		assert.NotEmpty(t, result.Header.Get("Location"), "Заголовок Location должен присутствовать")
 		assert.Equal(t, url, result.Header.Get("Location"), "Значение заголовка Location=%v", url)
@@ -66,6 +67,7 @@ func TestAddURLHandler(t *testing.T) {
 		handler(rr, req)
 
 		result := rr.Result()
+		defer result.Body.Close()
 
 		assert.Equal(t, http.StatusCreated, result.StatusCode, "Ожидается статус 201")
 		assert.NotNil(t, result.Body, "Ответ не может быть пустым")
