@@ -1,4 +1,4 @@
-package app
+package handler
 
 import (
 	"bytes"
@@ -9,11 +9,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/msorokin-hash/urlshortener/internal/app/config"
+	"github.com/msorokin-hash/urlshortener/internal/app/storage"
+	"github.com/msorokin-hash/urlshortener/internal/app/util"
 	"github.com/stretchr/testify/assert"
 )
 
 func createTempDB() (*sql.DB, error) {
-	dbConn, err := InitDB()
+	dbConn, err := storage.InitDB()
 	if err != nil {
 		return nil, err
 	}
@@ -34,13 +37,20 @@ func TestGetURLHandler(t *testing.T) {
 		defer dbConn.Close()
 		defer deleteTempDB("./urls.db")
 
+		app := &App{
+			Config: &config.Config{
+				Address:      "localhost:8080",
+				BaseShortURL: "http://localhost:8080",
+			},
+			DB: dbConn,
+		}
 		url := "https://ya.ru"
-		hash := HashStringData(url)
-		_ = CreateURL(dbConn, hash, url)
+		hash := util.HashStringData(url)
+		_ = storage.CreateURL(dbConn, hash, url)
 
 		req := httptest.NewRequest("GET", "/"+hash, nil)
 		rr := httptest.NewRecorder()
-		handler := http.HandlerFunc(GetURLHandler)
+		handler := http.HandlerFunc(app.GetURLHandler)
 
 		handler(rr, req)
 
@@ -60,9 +70,17 @@ func TestAddURLHandler(t *testing.T) {
 		defer dbConn.Close()
 		defer deleteTempDB("./urls.db")
 
+		app := &App{
+			Config: &config.Config{
+				Address:      "localhost:8080",
+				BaseShortURL: "http://localhost:8080",
+			},
+			DB: dbConn,
+		}
+
 		req := httptest.NewRequest("POST", "/", bytes.NewBufferString("https://yandex.ru"))
 		rr := httptest.NewRecorder()
-		handler := http.HandlerFunc(AddURLHandler)
+		handler := http.HandlerFunc(app.AddURLHandler)
 
 		handler(rr, req)
 

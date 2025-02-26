@@ -1,26 +1,36 @@
-package app
+package handler
 
 import (
+	"database/sql"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/msorokin-hash/urlshortener/internal/app/config"
+	"github.com/msorokin-hash/urlshortener/internal/app/storage"
+	"github.com/msorokin-hash/urlshortener/internal/app/util"
 )
 
-func GetURLHandler(w http.ResponseWriter, r *http.Request) {
+type App struct {
+	Config *config.Config
+	DB     *sql.DB
+}
+
+func (app *App) GetURLHandler(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) < 2 {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
 
-	dbConn, err := InitDB()
+	dbConn, err := storage.InitDB()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	defer dbConn.Close()
 
-	res, err := GetURLByHash(dbConn, parts[1])
+	res, err := storage.GetURLByHash(dbConn, parts[1])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
@@ -29,7 +39,7 @@ func GetURLHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func AddURLHandler(w http.ResponseWriter, r *http.Request) {
+func (app *App) AddURLHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "invalid request method", http.StatusBadRequest)
 		return
@@ -41,15 +51,15 @@ func AddURLHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbConn, err := InitDB()
+	dbConn, err := storage.InitDB()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	defer dbConn.Close()
 
-	hashed := HashStringData(string(body))
-	err = CreateURL(dbConn, string(hashed), string(body))
+	hashed := util.HashStringData(string(body))
+	err = storage.CreateURL(dbConn, string(hashed), string(body))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -57,5 +67,5 @@ func AddURLHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("http://localhost:8080/" + hashed))
+	w.Write([]byte(app.Config.BaseShortURL + "/" + hashed))
 }
