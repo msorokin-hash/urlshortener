@@ -32,5 +32,5 @@ func main() {
 	r.Post("/", app.AddURLHandler)
 	r.Get("/{hash}", app.GetURLHandler)
 
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(app.Config.Address, r))
 }

@@ -2,7 +2,6 @@ package config
 
 import (
 	"flag"
-	"fmt"
 )
 
 type Config struct {
@@ -15,10 +14,6 @@ func InitConfig() *Config {
 	baseURL := flag.String("b", "http://localhost:8080", "Базовый адрес коротких ссылок")
 
 	flag.Parse()
-
-	fmt.Println("Конфигурация сервиса:")
-	fmt.Println("  Адрес сервера:", *address)
-	fmt.Println("  Базовый URL:", *baseURL)
 
 	return &Config{
 		Address:      *address,
