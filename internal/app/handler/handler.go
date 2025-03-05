@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"database/sql"
 	"io"
 	"net/http"
 	"strings"
@@ -12,8 +11,8 @@ import (
 )
 
 type App struct {
-	Config *config.Config
-	DB     *sql.DB
+	Config  *config.Config
+	Storage *storage.Storage
 }
 
 func (app *App) GetURLHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,14 +22,7 @@ func (app *App) GetURLHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbConn, err := storage.InitDB()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	defer dbConn.Close()
-
-	res, err := storage.GetURLByHash(dbConn, parts[1])
+	res, err := app.Storage.GetURLByHash(parts[1])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
@@ -51,19 +43,8 @@ func (app *App) AddURLHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbConn, err := storage.InitDB()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	defer dbConn.Close()
-
 	hashed := util.HashStringData(string(body))
-	err = storage.CreateURL(dbConn, string(hashed), string(body))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	_ = app.Storage.CreateURL(hashed, string(body))
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
