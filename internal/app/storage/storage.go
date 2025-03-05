@@ -3,8 +3,6 @@ package storage
 import (
 	"errors"
 	"sync"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 type Data struct {
