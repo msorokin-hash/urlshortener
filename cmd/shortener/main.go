@@ -14,7 +14,7 @@ import (
 func main() {
 	cfg := config.NewConfig()
 
-	dbConn, err := storage.NewConfig()
+	dbConn, err := storage.NewDB()
 	if err != nil {
 		log.Fatal("Ошибка инициализации БД:", err)
 	}

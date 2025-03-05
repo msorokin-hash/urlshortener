@@ -16,7 +16,7 @@ import (
 )
 
 func createTempDB() (*sql.DB, error) {
-	dbConn, err := storage.NewConfig()
+	dbConn, err := storage.NewDB()
 	if err != nil {
 		return nil, err
 	}
