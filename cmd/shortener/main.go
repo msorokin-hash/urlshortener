@@ -12,9 +12,9 @@ import (
 )
 
 func main() {
-	cfg := config.InitConfig()
+	cfg := config.NewConfig()
 
-	dbConn, err := storage.InitDB()
+	dbConn, err := storage.NewConfig()
 	if err != nil {
 		log.Fatal("Ошибка инициализации БД:", err)
 	}

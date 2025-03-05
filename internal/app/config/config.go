@@ -2,43 +2,35 @@ package config
 
 import (
 	"flag"
-	"os"
+	"log"
+
+	"github.com/caarlos0/env"
 )
 
 type Config struct {
-	Address      string
-	BaseShortURL string
+	BaseShortURL string `env:"BASE_URL" envDefault:"http://localhost:8080"`
+	Address      string `env:"BASE_URL" envDefault:"localhost:8080"`
 }
 
-func InitConfig() *Config {
-	addressEnv := os.Getenv("SERVER_ADDRESS")
-	baseURLEnv := os.Getenv("BASE_URL")
+func NewConfig() *Config {
+	cfg := Config{}
+
+	if err := env.Parse(&cfg); err != nil {
+		log.Fatal("Ошибка парсинга переменных окружения:", err)
+	}
 
 	addressFlag := flag.String("a", "localhost:8080", "Адрес HTTP-сервера")
 	baseURLFlag := flag.String("b", "http://localhost:8080", "Базовый адрес коротких ссылок")
 
 	flag.Parse()
 
-	address := addressEnv
-	if address == "" {
-		if *addressFlag != "" {
-			address = *addressFlag
-		} else {
-			address = ":8080"
-		}
+	if *addressFlag != "" {
+		cfg.Address = *addressFlag
 	}
 
-	baseURL := baseURLEnv
-	if baseURL == "" {
-		if *baseURLFlag != "" {
-			baseURL = *baseURLFlag
-		} else {
-			baseURL = "http://localhost:8080"
-		}
+	if *baseURLFlag != "" {
+		cfg.BaseShortURL = *baseURLFlag
 	}
 
-	return &Config{
-		Address:      address,
-		BaseShortURL: baseURL,
-	}
+	return &cfg
 }

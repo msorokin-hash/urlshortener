@@ -6,7 +6,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func InitDB() (*sql.DB, error) {
+func NewConfig() (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", "./urls.db")
 	if err != nil {
 		return nil, err
