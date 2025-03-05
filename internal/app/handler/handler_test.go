@@ -2,11 +2,8 @@ package handler
 
 import (
 	"bytes"
-	"database/sql"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/msorokin-hash/urlshortener/internal/app/config"
@@ -15,38 +12,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func createTempDB() (*sql.DB, error) {
-	dbConn, err := storage.NewDB()
-	if err != nil {
-		return nil, err
-	}
-	return dbConn, nil
-}
-
-func deleteTempDB(dbFile string) {
-	err := os.Remove(dbFile)
-	if err != nil {
-		fmt.Println("Ошибка удаления файла базы данных:", err)
+func setupTestApp() *App {
+	store := storage.NewStorage()
+	return &App{
+		Config: &config.Config{
+			Address:      "localhost:8080",
+			BaseShortURL: "http://localhost:8080",
+		},
+		Storage: store,
 	}
 }
 
-func TestGetURLHandler(t *testing.T) {
-	t.Run("test get handler", func(t *testing.T) {
-		dbConn, err := createTempDB()
-		assert.NoError(t, err, "Ошибка при создании временной базы данных")
-		defer dbConn.Close()
-		defer deleteTempDB("./urls.db")
+func TestApp_GetURLHandler(t *testing.T) {
+	t.Run("test get url handler", func(t *testing.T) {
+		app := setupTestApp()
 
-		app := &App{
-			Config: &config.Config{
-				Address:      "localhost:8080",
-				BaseShortURL: "http://localhost:8080",
-			},
-			DB: dbConn,
-		}
 		url := "https://ya.ru"
 		hash := util.HashStringData(url)
-		_ = storage.CreateURL(dbConn, hash, url)
+		_ = app.Storage.CreateURL(hash, url)
 
 		req := httptest.NewRequest("GET", "/"+hash, nil)
 		rr := httptest.NewRecorder()
@@ -63,20 +46,9 @@ func TestGetURLHandler(t *testing.T) {
 	})
 }
 
-func TestAddURLHandler(t *testing.T) {
-	t.Run("test add handler", func(t *testing.T) {
-		dbConn, err := createTempDB()
-		assert.NoError(t, err, "Ошибка при создании временной базы данных")
-		defer dbConn.Close()
-		defer deleteTempDB("./urls.db")
-
-		app := &App{
-			Config: &config.Config{
-				Address:      "localhost:8080",
-				BaseShortURL: "http://localhost:8080",
-			},
-			DB: dbConn,
-		}
+func TestApp_AddURLHandler(t *testing.T) {
+	t.Run("test add url handler", func(t *testing.T) {
+		app := setupTestApp()
 
 		req := httptest.NewRequest("POST", "/", bytes.NewBufferString("https://yandex.ru"))
 		rr := httptest.NewRecorder()

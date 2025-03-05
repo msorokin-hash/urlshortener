@@ -13,16 +13,11 @@ import (
 
 func main() {
 	cfg := config.NewConfig()
-
-	dbConn, err := storage.NewDB()
-	if err != nil {
-		log.Fatal("Ошибка инициализации БД:", err)
-	}
-	defer dbConn.Close()
+	store := storage.NewStorage()
 
 	app := &handler.App{
-		Config: cfg,
-		DB:     dbConn,
+		Config:  cfg,
+		Storage: store,
 	}
 
 	r := chi.NewRouter()

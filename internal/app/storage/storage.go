@@ -1,52 +1,48 @@
 package storage
 
 import (
-	"database/sql"
+	"errors"
+	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func NewDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "./urls.db")
-	if err != nil {
-		return nil, err
-	}
-
-	createTableQuery := `
-	CREATE TABLE IF NOT EXISTS urls (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		hash TEXT NOT NULL UNIQUE,
-		url TEXT NOT NULL UNIQUE
-	);`
-
-	_, err = db.Exec(createTableQuery)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
+type Data struct {
+	HashURL    string
+	RequestURL string
 }
 
-func GetURLByHash(db *sql.DB, hash string) (string, error) {
-	var result string
-	err := db.QueryRow("SELECT url FROM urls WHERE hash = ?", hash).Scan(&result)
-	if err != nil {
-		return "", nil
-	}
-
-	return result, nil
+type Storage struct {
+	mu   sync.Mutex
+	urls map[string]Data
 }
 
-func CreateURL(db *sql.DB, hash string, url string) error {
-	result, err := db.Exec("INSERT INTO urls (hash, url) VALUES (?, ?)", hash, url)
-	if err != nil {
-		return err
+func NewStorage() *Storage {
+	return &Storage{
+		urls: make(map[string]Data),
 	}
+}
 
-	_, err = result.LastInsertId()
-	if err != nil {
-		return err
+func (s *Storage) GetURLByHash(hash string) (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	result, exists := s.urls[hash]
+	if !exists {
+		return "", errors.New("url not found")
 	}
+	return result.RequestURL, nil
+}
+
+func (s *Storage) CreateURL(hash string, url string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	u := Data{
+		HashURL:    hash,
+		RequestURL: url,
+	}
+	s.urls[hash] = u
 
 	return nil
 }
