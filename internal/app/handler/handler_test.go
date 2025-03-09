@@ -12,15 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupTestApp() *App {
+func setupTestApp() *Handler {
 	store := storage.NewStorage()
-	return &App{
-		Config: &config.Config{
-			Address:      "localhost:8080",
-			BaseShortURL: "http://localhost:8080",
-		},
-		Storage: store,
-	}
+	config := config.Config{Address: "localhost:8080", BaseShortURL: "http://localhost:8080"}
+	handler := NewHandler(&config, store)
+	return handler
 }
 
 func TestApp_GetURLHandler(t *testing.T) {
@@ -29,7 +25,7 @@ func TestApp_GetURLHandler(t *testing.T) {
 
 		url := "https://ya.ru"
 		hash := util.HashStringData(url)
-		_ = app.Storage.CreateURL(hash, url)
+		_ = app.Storage.Add(hash, url)
 
 		req := httptest.NewRequest("GET", "/"+hash, nil)
 		rr := httptest.NewRecorder()
