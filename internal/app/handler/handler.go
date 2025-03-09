@@ -6,23 +6,31 @@ import (
 	"strings"
 
 	"github.com/msorokin-hash/urlshortener/internal/app/config"
-	"github.com/msorokin-hash/urlshortener/internal/app/storage"
 	"github.com/msorokin-hash/urlshortener/internal/app/util"
 )
 
-type App struct {
-	Config  *config.Config
-	Storage *storage.Storage
+type Storage interface {
+	Lookup(hash string) (string, error)
+	Add(hash string, url string) error
 }
 
-func (app *App) GetURLHandler(w http.ResponseWriter, r *http.Request) {
+type Handler struct {
+	Config  *config.Config
+	Storage Storage
+}
+
+func NewHandler(config *config.Config, storage Storage) *Handler {
+	return &Handler{Config: config, Storage: storage}
+}
+
+func (h *Handler) GetURLHandler(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) < 2 {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
 
-	res, err := app.Storage.GetURLByHash(parts[1])
+	res, err := h.Storage.Lookup(parts[1])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
@@ -31,7 +39,7 @@ func (app *App) GetURLHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (app *App) AddURLHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) AddURLHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "invalid request method", http.StatusBadRequest)
 		return
@@ -44,9 +52,9 @@ func (app *App) AddURLHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hashed := util.HashStringData(string(body))
-	_ = app.Storage.CreateURL(hashed, string(body))
+	_ = h.Storage.Add(hashed, string(body))
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(app.Config.BaseShortURL + "/" + hashed))
+	w.Write([]byte(h.Config.BaseShortURL + "/" + hashed))
 }

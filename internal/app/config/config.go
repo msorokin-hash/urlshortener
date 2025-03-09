@@ -10,6 +10,7 @@ import (
 type Config struct {
 	BaseShortURL string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	Address      string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
+	LogLevel     string `env:"LOG_LEVEL" envDefault:"info"`
 }
 
 func NewConfig() *Config {
@@ -21,6 +22,7 @@ func NewConfig() *Config {
 
 	addressFlag := flag.String("a", "localhost:8080", "Адрес HTTP-сервера")
 	baseURLFlag := flag.String("b", "http://localhost:8080", "Базовый адрес коротких ссылок")
+	logLevel := flag.String("l", "info", "Уровень логирования")
 
 	flag.Parse()
 
@@ -30,6 +32,10 @@ func NewConfig() *Config {
 
 	if *baseURLFlag != "" {
 		cfg.BaseShortURL = *baseURLFlag
+	}
+
+	if *logLevel != "" {
+		cfg.LogLevel = *logLevel
 	}
 
 	return &cfg
