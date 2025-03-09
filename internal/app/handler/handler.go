@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"strings"
 
 	"github.com/msorokin-hash/urlshortener/internal/app/config"
+	"github.com/msorokin-hash/urlshortener/internal/app/entity"
 	"github.com/msorokin-hash/urlshortener/internal/app/util"
 )
 
@@ -37,6 +39,33 @@ func (h *Handler) GetURLHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Location", res)
 	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func (h *Handler) AddURLShortenHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "invalid request method", http.StatusBadRequest)
+		return
+	}
+
+	var req entity.Request
+	dec := json.NewDecoder(r.Body)
+	if err := dec.Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	hashed := util.HashStringData(req.URL)
+	_ = h.Storage.Add(hashed, req.URL)
+	resp := entity.Response{Result: h.Config.BaseShortURL + "/" + hashed}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	enc := json.NewEncoder(w)
+	if err := enc.Encode(resp); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 }
 
 func (h *Handler) AddURLHandler(w http.ResponseWriter, r *http.Request) {
