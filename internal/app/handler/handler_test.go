@@ -2,11 +2,13 @@ package handler
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/msorokin-hash/urlshortener/internal/app/config"
+	"github.com/msorokin-hash/urlshortener/internal/app/entity"
 	"github.com/msorokin-hash/urlshortener/internal/app/storage"
 	"github.com/msorokin-hash/urlshortener/internal/app/util"
 	"github.com/stretchr/testify/assert"
@@ -57,5 +59,34 @@ func TestApp_AddURLHandler(t *testing.T) {
 
 		assert.Equal(t, http.StatusCreated, result.StatusCode, "Ожидается статус 201")
 		assert.NotNil(t, result.Body, "Ответ не может быть пустым")
+	})
+}
+
+func TestHandler_AddURLShortenHandler(t *testing.T) {
+	t.Run("test add url handler", func(t *testing.T) {
+		app := setupTestApp()
+
+		url := entity.Request{URL: "https://yandex.ru"}
+		jsonURL, _ := json.Marshal(url)
+
+		req := httptest.NewRequest("POST", "/api/shorten", bytes.NewBuffer(jsonURL))
+		req.Header.Set("Content-Type", "application/json")
+		rr := httptest.NewRecorder()
+
+		handler := http.HandlerFunc(app.AddURLShortenHandler)
+
+		handler(rr, req)
+
+		result := rr.Result()
+		defer result.Body.Close()
+
+		assert.Equal(t, http.StatusCreated, result.StatusCode, "Ожидается статус 201")
+
+		var response map[string]string
+		err := json.Unmarshal(rr.Body.Bytes(), &response)
+
+		assert.NoError(t, err, "Ответ должен быть валидным JSON")
+		assert.Contains(t, response, "result", "Должен присутствовать ключ 'result'")
+		assert.NotEmpty(t, response["result"], "Result не должен быть пустым")
 	})
 }
