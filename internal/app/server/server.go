@@ -25,6 +25,7 @@ func (s *Server) SetupRouter() *chi.Mux {
 	_ = middlewares.Initialize(s.Config.LogLevel)
 
 	r := chi.NewRouter()
+
 	r.Use(middlewares.LoggingMiddleware)
 	r.Use(middlewares.GzipMiddleware)
 	r.Use(middleware.RequestID)
@@ -32,7 +33,7 @@ func (s *Server) SetupRouter() *chi.Mux {
 
 	r.Post("/", s.Handler.AddURLHandler)
 	r.Post("/api/shorten", s.Handler.AddURLShortenHandler)
-	r.Get("/{hash}", s.Handler.GetURLHandler)
+	r.Get("/{id}", s.Handler.GetURLHandler)
 
 	return r
 }
