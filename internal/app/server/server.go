@@ -6,10 +6,9 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/msorokin-hash/urlshortener/internal/app/compress"
 	"github.com/msorokin-hash/urlshortener/internal/app/config"
 	"github.com/msorokin-hash/urlshortener/internal/app/handler"
-	"github.com/msorokin-hash/urlshortener/internal/app/logger"
+	"github.com/msorokin-hash/urlshortener/internal/app/middlewares"
 )
 
 type Server struct {
@@ -23,11 +22,11 @@ func NewServer(c *config.Config, h handler.Handler) *Server {
 
 func (s *Server) SetupRouter() *chi.Mux {
 
-	_ = logger.Initialize(s.Config.LogLevel)
+	_ = middlewares.Initialize(s.Config.LogLevel)
 
 	r := chi.NewRouter()
-	r.Use(logger.LoggingMiddleware)
-	r.Use(compress.GzipMiddleware)
+	r.Use(middlewares.LoggingMiddleware)
+	r.Use(middlewares.GzipMiddleware)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.URLFormat)
 
