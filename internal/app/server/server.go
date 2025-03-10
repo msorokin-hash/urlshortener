@@ -30,6 +30,7 @@ func (s *Server) SetupRouter() *chi.Mux {
 	r.Use(middleware.URLFormat)
 
 	r.Post("/", s.Handler.AddURLHandler)
+	r.Post("/api/shorten", s.Handler.AddURLShortenHandler)
 	r.Get("/{hash}", s.Handler.GetURLHandler)
 
 	return r
