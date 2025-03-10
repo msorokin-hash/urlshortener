@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/msorokin-hash/urlshortener/internal/app/compress"
 	"github.com/msorokin-hash/urlshortener/internal/app/config"
 	"github.com/msorokin-hash/urlshortener/internal/app/handler"
 	"github.com/msorokin-hash/urlshortener/internal/app/logger"
@@ -26,6 +27,7 @@ func (s *Server) SetupRouter() *chi.Mux {
 
 	r := chi.NewRouter()
 	r.Use(logger.LoggingMiddleware)
+	r.Use(compress.GzipMiddleware)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.URLFormat)
 
