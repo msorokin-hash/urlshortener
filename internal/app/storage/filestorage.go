@@ -5,56 +5,42 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-	"sync"
 
 	"github.com/google/uuid"
 	"github.com/msorokin-hash/urlshortener/internal/app/entity"
 )
 
 type FileStorage struct {
-	mu       sync.Mutex
-	filePath string
-	urls     map[string]entity.FileStorage
+	file    *os.File
+	encoder *json.Encoder
 }
 
 func NewFileStorage(filePath string) (*FileStorage, error) {
-	fs := &FileStorage{
-		filePath: filePath,
-		urls:     make(map[string]entity.FileStorage),
-	}
-
-	if err := fs.load(); err != nil {
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
 		return nil, err
 	}
-	return fs, nil
-}
 
-func (fs *FileStorage) load() error {
-	fs.mu.Lock()
-	defer fs.mu.Unlock()
-
-	file, err := os.Open(fs.filePath)
+	f, err := os.Open(filePath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		return err
+		return nil, err
 	}
-	defer file.Close()
+	defer f.Close()
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		var record entity.FileStorage
-		if err := json.Unmarshal(scanner.Bytes(), &record); err != nil {
-			return err
-		}
-		fs.urls[record.ShortURL] = record
-	}
-	return scanner.Err()
+	return &FileStorage{
+		file:    file,
+		encoder: json.NewEncoder(file),
+	}, nil
 }
 
-func (fs *FileStorage) saveLine(record entity.FileStorage) error {
-	file, err := os.OpenFile(fs.filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+func (fs *FileStorage) Add(hash, url string) error {
+	record := entity.FileStorage{
+		UUID:        uuid.New().String(),
+		ShortURL:    hash,
+		OriginalURL: url,
+	}
+
+	file, err := os.OpenFile(fs.file.Name(), os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
 		return err
 	}
@@ -64,27 +50,21 @@ func (fs *FileStorage) saveLine(record entity.FileStorage) error {
 	return encoder.Encode(record)
 }
 
-func (fs *FileStorage) Add(hash, url string) error {
-	fs.mu.Lock()
-	defer fs.mu.Unlock()
-
-	record := entity.FileStorage{
-		UUID:        uuid.New().String(),
-		ShortURL:    hash,
-		OriginalURL: url,
-	}
-
-	fs.urls[hash] = record
-	return fs.saveLine(record)
-}
-
 func (fs *FileStorage) Lookup(hash string) (string, error) {
-	fs.mu.Lock()
-	defer fs.mu.Unlock()
-
-	result, exists := fs.urls[hash]
-	if !exists {
-		return "", errors.New("url not found")
+	file, err := os.Open(fs.file.Name())
+	if err != nil {
+		return "", err
 	}
-	return result.OriginalURL, nil
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		var record entity.FileStorage
+		if err := json.Unmarshal(scanner.Bytes(), &record); err == nil {
+			if record.ShortURL == hash {
+				return record.OriginalURL, nil
+			}
+		}
+	}
+	return "", errors.New("url not found")
 }
