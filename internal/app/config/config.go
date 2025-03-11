@@ -6,10 +6,10 @@ import (
 )
 
 type Config struct {
-	BaseShortURL    string `env:"BASE_URL" envDefault:"http://localhost:8080"`
-	Address         string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
-	LogLevel        string `env:"LOG_LEVEL" envDefault:"info"`
-	FileStoragePath string `env:"FILE_STORAGE_PATH" envDefault:"urls.json"`
+	BaseShortURL    string
+	Address         string
+	LogLevel        string
+	FileStoragePath string
 }
 
 func NewConfig() *Config {
@@ -40,7 +40,7 @@ func (c *Config) Parse() {
 }
 
 func (c *Config) parseFlags() {
-	flag.StringVar(&c.Address, "a", ":8080", "Адрес HTTP-сервера")
+	flag.StringVar(&c.Address, "a", "localhost:8080", "Адрес HTTP-сервера")
 	flag.StringVar(&c.BaseShortURL, "b", "http://localhost:8080", "Базовый адрес коротких ссылок")
 	flag.StringVar(&c.FileStoragePath, "f", "./urls.json", "Уровень логирования")
 	flag.StringVar(&c.LogLevel, "l", "info", "Путь к файлу хранилища")
