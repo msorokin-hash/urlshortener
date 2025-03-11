@@ -2,9 +2,7 @@ package config
 
 import (
 	"flag"
-	"log"
-
-	"github.com/caarlos0/env"
+	"os"
 )
 
 type Config struct {
@@ -15,34 +13,36 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	cfg := Config{}
+	return &Config{}
+}
 
-	if err := env.Parse(&cfg); err != nil {
-		log.Fatal("Ошибка парсинга переменных окружения:", err)
+func (c *Config) Parse() {
+
+	c.parseFlags()
+
+	serverAdd := os.Getenv("SERVER_ADDRESS")
+	if serverAdd != "" {
+		c.Address = serverAdd
 	}
 
-	addressFlag := flag.String("a", "localhost:8080", "Адрес HTTP-сервера")
-	baseURLFlag := flag.String("b", "http://localhost:8080", "Базовый адрес коротких ссылок")
-	logLevel := flag.String("l", "info", "Уровень логирования")
-	fileStoragePath := flag.String("f", "urls.json", "Путь к файлу хранилища")
+	baseURL := os.Getenv("BASE_URL")
+	if baseURL != "" {
+		c.BaseShortURL = baseURL
+	}
 
+	if envLogLevel := os.Getenv("LOG_LEVEL"); envLogLevel != "" {
+		c.LogLevel = envLogLevel
+	}
+
+	if envPathDB := os.Getenv("FILE_STORAGE_PATH"); envPathDB != "" {
+		c.FileStoragePath = envPathDB
+	}
+}
+
+func (c *Config) parseFlags() {
+	flag.StringVar(&c.Address, "a", ":8080", "Адрес HTTP-сервера")
+	flag.StringVar(&c.BaseShortURL, "b", "http://localhost:8080", "Базовый адрес коротких ссылок")
+	flag.StringVar(&c.FileStoragePath, "f", "./urls.json", "Уровень логирования")
+	flag.StringVar(&c.LogLevel, "l", "info", "Путь к файлу хранилища")
 	flag.Parse()
-
-	if *addressFlag != "" {
-		cfg.Address = *addressFlag
-	}
-
-	if *baseURLFlag != "" {
-		cfg.BaseShortURL = *baseURLFlag
-	}
-
-	if *logLevel != "" {
-		cfg.LogLevel = *logLevel
-	}
-
-	if *fileStoragePath != "" {
-		cfg.FileStoragePath = *fileStoragePath
-	}
-
-	return &cfg
 }
