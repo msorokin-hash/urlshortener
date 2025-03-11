@@ -14,7 +14,7 @@ func main() {
 	cfg := config.NewConfig()
 
 	// Создаём in-memory хранилище
-	store, err := storage.NewFileStorage("urls.json")
+	store, err := storage.NewFileStorage(cfg.FileStoragePath)
 	if err != nil {
 		log.Fatal("Ошибка инициализации файлового хранилища:", err)
 	}
