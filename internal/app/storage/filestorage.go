@@ -21,7 +21,7 @@ func NewFileStorage(filePath string) (*FileStorage, error) {
 		return nil, err
 	}
 
-	f, err := os.Open(filePath)
+	f, err := os.Open(file.Name())
 	if err != nil {
 		return nil, err
 	}
@@ -60,10 +60,13 @@ func (fs *FileStorage) Lookup(hash string) (string, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		var record entity.FileStorage
-		if err := json.Unmarshal(scanner.Bytes(), &record); err == nil {
-			if record.ShortURL == hash {
-				return record.OriginalURL, nil
-			}
+		line := scanner.Text()
+		err = json.Unmarshal([]byte(line), &record)
+		if err != nil {
+			continue
+		}
+		if record.ShortURL == hash {
+			return record.OriginalURL, nil
 		}
 	}
 	return "", errors.New("url not found")
