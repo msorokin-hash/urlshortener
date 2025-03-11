@@ -7,18 +7,18 @@ import (
 	"github.com/msorokin-hash/urlshortener/internal/app/entity"
 )
 
-type Storage struct {
+type InMemoryStorage struct {
 	mu   sync.Mutex
 	urls map[string]entity.InternalStorage
 }
 
-func NewStorage() *Storage {
-	return &Storage{
+func NewInMemoryStorage() *InMemoryStorage {
+	return &InMemoryStorage{
 		urls: make(map[string]entity.InternalStorage),
 	}
 }
 
-func (s *Storage) Lookup(hash string) (string, error) {
+func (s *InMemoryStorage) Lookup(hash string) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -29,7 +29,7 @@ func (s *Storage) Lookup(hash string) (string, error) {
 	return result.URL, nil
 }
 
-func (s *Storage) Add(hash string, url string) error {
+func (s *InMemoryStorage) Add(hash, url string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

@@ -31,9 +31,11 @@ func (s *Server) SetupRouter() *chi.Mux {
 	r.Use(middleware.RequestID)
 	r.Use(middleware.URLFormat)
 
-	r.Post("/", s.Handler.AddURLHandler)
-	r.Post("/api/shorten", s.Handler.AddURLShortenHandler)
-	r.Get("/{id}", s.Handler.GetURLHandler)
+	r.Route("/", func(r chi.Router) {
+		r.Post("/", s.Handler.AddURLHandler)
+		r.Post("/api/shorten", s.Handler.AddURLShortenHandler)
+		r.Get("/{id}", s.Handler.GetURLHandler)
+	})
 
 	return r
 }

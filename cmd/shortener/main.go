@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/msorokin-hash/urlshortener/internal/app/config"
 	"github.com/msorokin-hash/urlshortener/internal/app/handler"
 	"github.com/msorokin-hash/urlshortener/internal/app/server"
@@ -12,7 +14,10 @@ func main() {
 	cfg := config.NewConfig()
 
 	// Создаём in-memory хранилище
-	store := storage.NewStorage()
+	store, err := storage.NewFileStorage("urls.json")
+	if err != nil {
+		log.Fatal("Ошибка инициализации файлового хранилища:", err)
+	}
 
 	// Создаём приложение
 	handler := handler.NewHandler(cfg, store)

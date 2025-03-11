@@ -8,9 +8,10 @@ import (
 )
 
 type Config struct {
-	BaseShortURL string `env:"BASE_URL" envDefault:"http://localhost:8080"`
-	Address      string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
-	LogLevel     string `env:"LOG_LEVEL" envDefault:"info"`
+	BaseShortURL    string `env:"BASE_URL" envDefault:"http://localhost:8080"`
+	Address         string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
+	LogLevel        string `env:"LOG_LEVEL" envDefault:"info"`
+	FileStoragePath string `env:"FILE_STORAGE_PATH" envDefault:"urls.json"`
 }
 
 func NewConfig() *Config {
@@ -23,6 +24,7 @@ func NewConfig() *Config {
 	addressFlag := flag.String("a", "localhost:8080", "Адрес HTTP-сервера")
 	baseURLFlag := flag.String("b", "http://localhost:8080", "Базовый адрес коротких ссылок")
 	logLevel := flag.String("l", "info", "Уровень логирования")
+	fileStoragePath := flag.String("f", "urls.json", "Путь к файлу хранилища")
 
 	flag.Parse()
 
@@ -36,6 +38,10 @@ func NewConfig() *Config {
 
 	if *logLevel != "" {
 		cfg.LogLevel = *logLevel
+	}
+
+	if *fileStoragePath != "" {
+		cfg.FileStoragePath = *fileStoragePath
 	}
 
 	return &cfg

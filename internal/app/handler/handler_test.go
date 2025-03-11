@@ -15,7 +15,7 @@ import (
 )
 
 func setupTestApp() *Handler {
-	store := storage.NewStorage()
+	store := storage.NewInMemoryStorage()
 	config := config.Config{Address: "localhost:8080", BaseShortURL: "http://localhost:8080"}
 	handler := NewHandler(&config, store)
 	return handler
