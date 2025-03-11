@@ -3,6 +3,7 @@ module github.com/msorokin-hash/urlshortener
 go 1.22.12
 
 require (
+	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/go-chi/chi v1.5.5
 	github.com/google/uuid v1.6.0
 	go.uber.org/zap v1.27.0
