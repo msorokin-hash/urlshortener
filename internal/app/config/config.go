@@ -51,6 +51,7 @@ func NewConfig() *Config {
 	log.Println("Конфигурация сервера:")
 	log.Println("  Адрес сервера:", cfg.Address)
 	log.Println("  Базовый URL:", cfg.BaseShortURL)
+	log.Println("  Уровень логирования:", cfg.LogLevel)
 	log.Println("  Файл хранения данных:", cfg.FileStoragePath)
 
 	return &cfg
