@@ -2,7 +2,6 @@ package config
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 
@@ -26,7 +25,7 @@ func NewConfig() *Config {
 	addressFlag := flag.String("a", "localhost:8080", "Адрес HTTP-сервера")
 	baseURLFlag := flag.String("b", "http://localhost:8080", "Базовый адрес коротких ссылок")
 	logLevel := flag.String("l", "info", "Уровень логирования")
-	fileStorageFlag := flag.String("f", "./urls.json", "Путь к хранилищу")
+	fileStorageFlag := flag.String("f", "default.json", "Путь к хранилищу")
 
 	flag.Parse()
 
@@ -48,11 +47,6 @@ func NewConfig() *Config {
 			cfg.FileStoragePath = *fileStorageFlag
 		}
 	}
-
-	fmt.Println("Конфигурация сервера:")
-	fmt.Println("  Адрес сервера:", cfg.Address)
-	fmt.Println("  Базовый URL:", cfg.BaseShortURL)
-	fmt.Println("  Файл хранения данных:", cfg.FileStoragePath)
 
 	return &cfg
 }

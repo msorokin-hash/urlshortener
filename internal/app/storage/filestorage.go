@@ -46,8 +46,7 @@ func (fs *FileStorage) Add(hash, url string) error {
 	}
 	defer file.Close()
 
-	encoder := json.NewEncoder(file)
-	return encoder.Encode(record)
+	return fs.encoder.Encode(record)
 }
 
 func (fs *FileStorage) Lookup(hash string) (string, error) {
@@ -69,5 +68,6 @@ func (fs *FileStorage) Lookup(hash string) (string, error) {
 			return record.OriginalURL, nil
 		}
 	}
+
 	return "", errors.New("url not found")
 }
