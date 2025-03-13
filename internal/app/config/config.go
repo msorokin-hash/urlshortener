@@ -8,9 +8,9 @@ import (
 )
 
 type Config struct {
-	BaseShortURL    string `env:"BASE_URL" envDefault:"http://localhost:8080"`
-	Address         string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
-	LogLevel        string `env:"LOG_LEVEL" envDefault:"info"`
+	BaseShortURL    string `env:"BASE_URL"`
+	Address         string `env:"SERVER_ADDRESS"`
+	LogLevel        string `env:"LOG_LEVEL"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 	DatabaseDSN     string `env:"DATABASE_DSN"`
 }
