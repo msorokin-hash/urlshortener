@@ -19,12 +19,6 @@ func main() {
 		log.Fatal("Ошибка создания хранилища:", err)
 	}
 
-	// Создаём БД соединение
-	_, err = storage.NewPostgresStorage(cfg.DatabaseDSN)
-	if err != nil {
-		log.Fatal("Ошибка подключения к PostgreSQL:", err)
-	}
-
 	// Создаём приложение
 	handler := handler.NewHandler(cfg, store)
 
