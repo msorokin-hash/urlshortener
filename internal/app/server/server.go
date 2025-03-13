@@ -35,6 +35,7 @@ func (s *Server) SetupRouter() *chi.Mux {
 		r.Post("/", s.Handler.AddURLHandler)
 		r.Post("/api/shorten", s.Handler.AddURLShortenHandler)
 		r.Get("/{id}", s.Handler.GetURLHandler)
+		r.Get("/ping", s.Handler.PingHandler)
 	})
 
 	return r

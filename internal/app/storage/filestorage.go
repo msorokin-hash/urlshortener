@@ -33,11 +33,11 @@ func NewFileStorage(filePath string) (*FileStorage, error) {
 	}, nil
 }
 
-func (fs *FileStorage) Add(hash, url string) error {
+func (fs *FileStorage) Add(shortURL, originalURL string) error {
 	record := entity.FileStorage{
 		UUID:        uuid.New().String(),
-		ShortURL:    hash,
-		OriginalURL: url,
+		ShortURL:    shortURL,
+		OriginalURL: originalURL,
 	}
 
 	file, err := os.OpenFile(fs.file.Name(), os.O_APPEND|os.O_WRONLY, 0666)
@@ -49,7 +49,7 @@ func (fs *FileStorage) Add(hash, url string) error {
 	return fs.encoder.Encode(record)
 }
 
-func (fs *FileStorage) Lookup(hash string) (string, error) {
+func (fs *FileStorage) Lookup(shortURL string) (string, error) {
 	file, err := os.Open(fs.file.Name())
 	if err != nil {
 		return "", err
@@ -64,10 +64,17 @@ func (fs *FileStorage) Lookup(hash string) (string, error) {
 		if err != nil {
 			continue
 		}
-		if record.ShortURL == hash {
+		if record.ShortURL == shortURL {
 			return record.OriginalURL, nil
 		}
 	}
 
 	return "", errors.New("url not found")
+}
+
+func (fs *FileStorage) Ping() error {
+	return nil
+}
+
+func (fs *FileStorage) Close() {
 }

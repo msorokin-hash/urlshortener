@@ -18,26 +18,33 @@ func NewInMemoryStorage() *InMemoryStorage {
 	}
 }
 
-func (s *InMemoryStorage) Lookup(hash string) (string, error) {
+func (s *InMemoryStorage) Lookup(shortURL string) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	result, exists := s.urls[hash]
+	result, exists := s.urls[shortURL]
 	if !exists {
 		return "", errors.New("url not found")
 	}
 	return result.URL, nil
 }
 
-func (s *InMemoryStorage) Add(hash, url string) error {
+func (s *InMemoryStorage) Add(shortURL, originalURL string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	u := entity.InternalStorage{
-		Alias: hash,
-		URL:   url,
+		Alias: shortURL,
+		URL:   originalURL,
 	}
-	s.urls[hash] = u
+	s.urls[shortURL] = u
 
 	return nil
+}
+
+func (s *InMemoryStorage) Ping() error {
+	return nil
+}
+
+func (s *InMemoryStorage) Close() {
 }

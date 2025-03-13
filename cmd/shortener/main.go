@@ -13,10 +13,16 @@ func main() {
 	// Инициализируем конфигурацию
 	cfg := config.NewConfig()
 
-	// Создаём in-memory хранилище
+	// Создаем файловое хранилище
 	store, err := storage.NewFileStorage(cfg.FileStoragePath)
 	if err != nil {
-		log.Fatal("Ошибка инициализации файлового хранилища:", err)
+		log.Fatal("Ошибка создания хранилища:", err)
+	}
+
+	// Создаём БД соединение
+	_, err = storage.NewPostgresStorage(cfg.DatabaseDSN)
+	if err != nil {
+		log.Fatal("Ошибка подключения к PostgreSQL:", err)
 	}
 
 	// Создаём приложение

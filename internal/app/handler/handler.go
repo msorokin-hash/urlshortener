@@ -8,20 +8,16 @@ import (
 
 	"github.com/msorokin-hash/urlshortener/internal/app/config"
 	"github.com/msorokin-hash/urlshortener/internal/app/entity"
+	"github.com/msorokin-hash/urlshortener/internal/app/service"
 	"github.com/msorokin-hash/urlshortener/internal/app/util"
 )
 
-type Storage interface {
-	Lookup(hash string) (string, error)
-	Add(hash string, url string) error
-}
-
 type Handler struct {
 	Config  *config.Config
-	Storage Storage
+	Storage service.Storage
 }
 
-func NewHandler(config *config.Config, storage Storage) *Handler {
+func NewHandler(config *config.Config, storage service.Storage) *Handler {
 	return &Handler{Config: config, Storage: storage}
 }
 
@@ -86,4 +82,13 @@ func (h *Handler) AddURLHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(h.Config.BaseShortURL + "/" + hashed))
+}
+
+func (h *Handler) PingHandler(w http.ResponseWriter, r *http.Request) {
+	if err := h.Storage.Ping(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
 }
