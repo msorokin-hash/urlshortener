@@ -5,9 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+var (
+	pgInstance *PostgresStorage
+	pgOnce     sync.Once
+	mu         sync.Mutex
 )
 
 type PostgresStorage struct {
@@ -15,20 +22,32 @@ type PostgresStorage struct {
 }
 
 func NewPostgresStorage(dsn string) (*PostgresStorage, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	var err error
 
-	pool, err := pgxpool.New(ctx, dsn)
+	pgOnce.Do(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		pool, connErr := pgxpool.New(ctx, dsn)
+		if connErr != nil {
+			err = fmt.Errorf("ошибка подключения к базе данных: %w", connErr)
+			return
+		}
+
+		if pingErr := pool.Ping(ctx); pingErr != nil {
+			pool.Close()
+			err = fmt.Errorf("ошибка проверки соединения с базой данных: %w", pingErr)
+			return
+		}
+
+		pgInstance = &PostgresStorage{pool: pool}
+	})
+
 	if err != nil {
-		return nil, fmt.Errorf("ошибка подключения к базе данных: %w", err)
+		return nil, err
 	}
 
-	if err := pool.Ping(ctx); err != nil {
-		pool.Close()
-		return nil, fmt.Errorf("ошибка проверки соединения с базой данных: %w", err)
-	}
-
-	return &PostgresStorage{pool: pool}, nil
+	return pgInstance, nil
 }
 
 func (ps *PostgresStorage) Add(shortURL, originalURL string) error {
@@ -40,19 +59,24 @@ func (ps *PostgresStorage) Lookup(shortURL string) (string, error) {
 }
 
 func (ps *PostgresStorage) Ping() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	err := ps.pool.Ping(ctx)
 	if err != nil {
 		return errors.New("не удалось подключиться к базе данных")
 	}
+
 	return nil
 }
 
 func (ps *PostgresStorage) Close() {
-	if ps.pool != nil {
-		ps.pool.Close()
+	mu.Lock()
+	defer mu.Unlock()
+
+	if pgInstance != nil && pgInstance.pool != nil {
+		pgInstance.pool.Close()
+		pgInstance = nil
 		log.Println("пул соединений с базой данных закрыт")
 	}
 }
