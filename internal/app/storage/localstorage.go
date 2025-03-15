@@ -18,7 +18,7 @@ func NewInMemoryStorage() *InMemoryStorage {
 	}
 }
 
-func (s *InMemoryStorage) Lookup(shortURL string) (string, error) {
+func (s *InMemoryStorage) Get(shortURL string) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -29,7 +29,7 @@ func (s *InMemoryStorage) Lookup(shortURL string) (string, error) {
 	return result.URL, nil
 }
 
-func (s *InMemoryStorage) Add(shortURL, originalURL string) error {
+func (s *InMemoryStorage) Insert(shortURL, originalURL string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

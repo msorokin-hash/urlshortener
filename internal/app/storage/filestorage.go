@@ -33,7 +33,7 @@ func NewFileStorage(filePath string) (*FileStorage, error) {
 	}, nil
 }
 
-func (fs *FileStorage) Add(shortURL, originalURL string) error {
+func (fs *FileStorage) Insert(shortURL, originalURL string) error {
 	record := entity.FileStorage{
 		UUID:        uuid.New().String(),
 		ShortURL:    shortURL,
@@ -49,7 +49,7 @@ func (fs *FileStorage) Add(shortURL, originalURL string) error {
 	return fs.encoder.Encode(record)
 }
 
-func (fs *FileStorage) Lookup(shortURL string) (string, error) {
+func (fs *FileStorage) Get(shortURL string) (string, error) {
 	file, err := os.Open(fs.file.Name())
 	if err != nil {
 		return "", err

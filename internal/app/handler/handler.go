@@ -28,7 +28,7 @@ func (h *Handler) GetURLHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.Storage.Lookup(parts[1])
+	res, err := h.Storage.Get(parts[1])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
@@ -51,7 +51,7 @@ func (h *Handler) AddURLShortenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hashed := util.HashStringData(req.URL)
-	_ = h.Storage.Add(hashed, req.URL)
+	_ = h.Storage.Insert(hashed, req.URL)
 	resp := entity.Response{Result: h.Config.BaseShortURL + "/" + hashed}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -77,7 +77,7 @@ func (h *Handler) AddURLHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hashed := util.HashStringData(string(body))
-	_ = h.Storage.Add(hashed, string(body))
+	_ = h.Storage.Insert(hashed, string(body))
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)

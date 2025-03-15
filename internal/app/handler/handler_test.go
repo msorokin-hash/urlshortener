@@ -27,7 +27,7 @@ func TestApp_GetURLHandler(t *testing.T) {
 
 		url := "https://ya.ru"
 		hash := util.HashStringData(url)
-		_ = app.Storage.Add(hash, url)
+		_ = app.Storage.Insert(hash, url)
 
 		req := httptest.NewRequest("GET", "/"+hash, nil)
 		rr := httptest.NewRecorder()

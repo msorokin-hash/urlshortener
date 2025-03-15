@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -56,12 +58,42 @@ func NewPostgresStorage(dsn string) (*PostgresStorage, error) {
 	return pgInstance, nil
 }
 
-func (ps *PostgresStorage) Add(shortURL, originalURL string) error {
+func (ps *PostgresStorage) Insert(shortURL, originalURL string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `INSERT INTO shortened_urls (uuid, short_url, original_url, created_at) 
+	          VALUES (@uuid, @shortURL, @originalURL, NOW())`
+	args := pgx.NamedArgs{
+		"uuid":        uuid.New().String(),
+		"shortURL":    shortURL,
+		"originalURL": originalURL,
+	}
+	_, err := ps.pool.Exec(ctx, query, args)
+	if err != nil {
+		return errors.New("ошибка при добавлении записи в базу данных")
+	}
+
+	log.Printf("URL добавлен: %s -> %s", shortURL, originalURL)
 	return nil
 }
 
-func (ps *PostgresStorage) Lookup(shortURL string) (string, error) {
-	return "", nil
+func (ps *PostgresStorage) Get(shortURL string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `SELECT original_url FROM shortened_urls WHERE short_url = @shortURL`
+	args := pgx.NamedArgs{"shortURL": shortURL}
+	row := ps.pool.QueryRow(ctx, query, args)
+
+	var originalURL string
+	err := row.Scan(&originalURL)
+	if err != nil {
+		return "", err
+	}
+
+	log.Printf("URL получен из БД: %s", originalURL)
+	return originalURL, nil
 }
 
 func (ps *PostgresStorage) Ping() error {
