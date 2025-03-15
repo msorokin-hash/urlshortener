@@ -40,6 +40,12 @@ func NewPostgresStorage(dsn string) (*PostgresStorage, error) {
 			return
 		}
 
+		if tableErr := createTables(ctx, pool); tableErr != nil {
+			pool.Close()
+			err = fmt.Errorf("ошибка при создании таблиц: %w", tableErr)
+			return
+		}
+
 		pgInstance = &PostgresStorage{pool: pool}
 	})
 
@@ -79,4 +85,22 @@ func (ps *PostgresStorage) Close() {
 		pgInstance = nil
 		log.Println("пул соединений с базой данных закрыт")
 	}
+}
+
+func createTables(ctx context.Context, pool *pgxpool.Pool) error {
+	query := `
+	CREATE TABLE IF NOT EXISTS shortened_urls (
+		id SERIAL PRIMARY KEY,
+		uuid TEXT UNIQUE NOT NULL,
+		short_url TEXT UNIQUE NOT NULL,
+		original_url TEXT NOT NULL,
+		created_at TIMESTAMP DEFAULT NOW()
+	);`
+
+	_, err := pool.Exec(ctx, query)
+	if err != nil {
+		return fmt.Errorf("ошибка при создании таблицы shortened_urls: %w", err)
+	}
+
+	return nil
 }

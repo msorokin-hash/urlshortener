@@ -13,10 +13,10 @@ func main() {
 	// Инициализируем конфигурацию
 	cfg := config.NewConfig()
 
-	// Создаем файловое хранилище
-	store, err := storage.NewFileStorage(cfg.FileStoragePath)
+	// Создаем storage
+	store, err := storage.SelectStorage(cfg)
 	if err != nil {
-		log.Fatal("Ошибка создания хранилища:", err)
+		log.Fatal("Ошибка при выборе хранилища:", err)
 	}
 
 	// Создаём приложение
