@@ -59,7 +59,7 @@ func NewPostgresStorage(dsn string) (*PostgresStorage, error) {
 }
 
 func (ps *PostgresStorage) Insert(shortURL, originalURL string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	query := `INSERT INTO shortened_urls (uuid, short_url, original_url, created_at) 
@@ -79,7 +79,7 @@ func (ps *PostgresStorage) Insert(shortURL, originalURL string) error {
 }
 
 func (ps *PostgresStorage) Get(shortURL string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	query := `SELECT original_url FROM shortened_urls WHERE short_url = @shortURL`
@@ -97,7 +97,7 @@ func (ps *PostgresStorage) Get(shortURL string) (string, error) {
 }
 
 func (ps *PostgresStorage) Ping() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	err := ps.pool.Ping(ctx)
